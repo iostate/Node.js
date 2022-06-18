@@ -6,8 +6,14 @@ const Bootcamp = require('../models/Bootcamp');
  * @route   GET /api/v1/bootcamps
  * @access  Public
  */
-exports.getBootcamps = (req, res, next) => {
-  res.status(200).json({ success: true, msg: 'Show all bootcamps', hello: req.hello });
+exports.getBootcamps = async (req, res, next) => {
+  try {
+    const bootcamps = await Bootcamp.find();
+    res.status(200).json({ success: true, data: bootcamps });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false });
+  }
 };
 
 /**
@@ -27,8 +33,8 @@ exports.getBootcamp = (req, res, next) => {
  * @access  Public
  */
 exports.createBootcamp = async (req, res, next) => {
-  console.log(req.body);
   try {
+    console.log(req.body);
     // const bootcamp = await Bootcamp.create(req.body);
     const bootcamp = await Bootcamp.create(req.body);
 
@@ -36,10 +42,21 @@ exports.createBootcamp = async (req, res, next) => {
       success: true,
       data: bootcamp,
     });
+
+    console.log(`bootcamp = `);
+    console.log(bootcamp);
   } catch (err) {
     console.log(err);
     res.status(400).json({ success: false, error: `${err}` });
   }
+
+  // console.log(req.body);
+  // console.log(`req.body = ${JSON.stringify(req.body)}`);
+  // console.log(`req.query = ${JSON.stringify(req.query)}`);
+  // console.log(`req.app = ${req.app}`);
+  // console.log(`req.baseUrl = ${req.baseUrl}`);
+  // console.log(`req.state = ${req.state}`);
+
   // res.status(200).json({ success: true, msg: `Create new bootcamp id ${req.params.id}` });
 };
 
