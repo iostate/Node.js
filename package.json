@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production node server",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js"
+    "dev": "kill -9 $(lsof -ti:5000,5001) nodemon server.js"
   },
   "keywords": [],
   "author": "",
