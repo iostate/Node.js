@@ -1,3 +1,12 @@
+/**
+ * Comparison Query Operators:
+ * https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
+ *
+ * Field Names with Periods (.) and Dollar Signs ($):
+ * https://www.mongodb.com/docs/manual/core/dot-dollar-considerations/
+ *
+ */
+
 const Bootcamp = require('../models/Bootcamp');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
@@ -11,15 +20,68 @@ const geocoder = require('../utils/geocoder');
  */
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
   let query;
+
+  const reqQuery = { ...req.query };
+
+  const removeFields = ['select', 'sort', 'page', 'limit'];
+
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // Turn the query into JSON
   let queryStr = JSON.stringify(req.query);
 
+  // Prepending $ to a comparison query operator
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
 
-  console.log(queryStr);
-  query = await Bootcamp.find(JSON.parse(queryStr));
+  query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
+
+  // Handle select operator
+  if (req.query.select) {
+    const fields = req.query.select.split(',').join(' ');
+    console.log(fields); // -> 'name description'
+    // query = await Bootcamp.find(JSON.parse(queryStr)).select(fields);
+    query = query.select(fields);
+    console.log(query);
+  }
+
+  // Handle sort operator
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(',').join(' ');
+    // console.log(fields);
+    // query = await Bootcamp.find(JSON.parse(queryStr)).sort(fields);
+    // Sort in ASC order
+    query = query.sort(sortBy);
+  } else {
+    // Sort in DESC order
+    query = query.sort('-createdAt');
+  }
+
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 1;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  const total = await Bootcamp.countDocuments();
+
   const bootcamps = await query;
 
-  res.status(200).json({ success: true, count: bootcamps.length, data: bootcamps });
+  const pagination = {};
+  // Will return only if we're not at the end of endIndex
+  if (endIndex < total) {
+    pagination.next = {
+      page: page + 1,
+      limit,
+    };
+  }
+
+  // Will always except at 0 lol
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit,
+    };
+  }
+
+  res.status(200).json({ success: true, count: bootcamps.length, pagination, data: bootcamps });
 });
 
 /**
@@ -86,16 +148,13 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
  */
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   // const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
-  console.log(req);
-  const bootcamp = await Bootcamp.findOneAndDelete(req.params);
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404));
   }
 
-  console.log(res);
-  console.log(req);
-
+  bootcamp.remove();
   res.status(200).json({ success: true, msg: `Deleted bootcamp id ${req.params.id}`, data: {} });
 });
 
