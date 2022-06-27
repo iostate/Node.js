@@ -11,33 +11,44 @@ const ErrorResponse = require('../utils/errorResponse');
  * @access  Public
  */
 exports.getCourses = asyncHandler(async (req, res, next) => {
-  let query;
-
-  console.log(req);
-
   if (req.params.bootcampId) {
-    console.log(req.params.bootcampId);
-    // omit await here.. but populate query with mongoose.Query to use its functionality
-    query = Course.find({ bootcamp: req.params.bootcampId });
-  } else {
-    // Only return the name & description field with the courses
-    query = Course.find().populate({
-      path: 'bootcamp',
-      select: 'name description',
+    const courses = await Course.find({ bootcamp: req.params.bootcampId });
+
+    return res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses,
     });
+  } else {
+    res.status(200).json(res.advancedResults);
   }
+  // let query;
 
-  const courses = await query;
+  // console.log(req);
 
-  if (!courses) {
-    return next(new ErrorResponse(`Courses not found`, 404));
-  }
+  // if (req.params.bootcampId) {
+  //   console.log(req.params.bootcampId);
+  //   // omit await here.. but populate query with mongoose.Query to use its functionality
+  //   query = Course.find({ bootcamp: req.params.bootcampId });
+  // } else {
+  //   // Only return the name & description field with the courses
+  //   query = Course.find().populate({
+  //     path: 'bootcamp',
+  //     select: 'name description',
+  //   });
+  // }
 
-  res.status(200).json({
-    success: true,
-    count: courses.length,
-    data: courses,
-  });
+  // const courses = await query;
+
+  // if (!courses) {
+  //   return next(new ErrorResponse(`Courses not found`, 404));
+  // }
+
+  // res.status(200).json({
+  //   success: true,
+  //   count: courses.length,
+  //   data: courses,
+  // });
 });
 
 /**

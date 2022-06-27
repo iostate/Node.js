@@ -72,21 +72,17 @@ CourseSchema.statics.getAverageCost = async function (bootcampId) {
   } catch (err) {
     console.error(err);
   }
-
-  // console.log(temp);
-  console.log(obj);
-
   // console.log(obj[0]._id.toString());
 };
 
 CourseSchema.post('save', function () {
   // let bootcampId = this.bootcamp[0]._id.toString();
-  console.log(this.bootcamp);
+  // console.log(this.bootcamp);
   this.constructor.getAverageCost(this.bootcamp);
 });
 
 CourseSchema.pre('remove', function () {
-  const vals = Object.values(this.bootcamp);
+  // const vals = Object.values(this.bootcamp);
   // vals.forEach((e) => console.log(e));
   const bootcampId = this.bootcamp[0]._id.toString();
   this.constructor.getAverageCost(this.bootcamp);
