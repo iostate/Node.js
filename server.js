@@ -1,12 +1,14 @@
 /**
  * 13. Creating Routes & Responses In Express
  */
+const path = require('path');
 const express = require('express');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const colors = require('colors');
+const fileUpload = require('express-fileupload');
 const cors = require('cors');
-// const logger = require('./middleware/logger');
 const errorHandler = require('./middleware/error');
 const connectDB = require('./db');
 
@@ -17,9 +19,12 @@ const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(helmet()); // Secure HTTP Headers
+app.use(cors()); // Cross origin requests
+app.use(express.json()); // Body parser
+app.use(fileUpload()); // File Uploader for route api/v1/bootcamps/:bootcampId/photos
 // app.use(
+//   // Allows us to get
 //   express.urlencoded({
 //     extended: false,
 //   })
@@ -31,12 +36,18 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Set static folder
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Replaced our own middleware with Morgan.
 // app.use(logger);
 
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
+// app.use('/api/v1/auth', auth);
+// app.use('/api/v1/users', users);
+// app.use('/api/v1/reviews', reviews);
 
 app.use(errorHandler);
 

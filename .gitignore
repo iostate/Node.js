@@ -5,3 +5,5 @@ _data/
 links.md
 devcamper_theme.md
 .DS_Store
+venv/
+client/
