@@ -134,7 +134,9 @@ BootcampSchema.pre('save', async function (next) {
   this.address = undefined;
   next();
 });
-
+/**
+ * @note Removes all courses upon deletion of the Bootcamp.
+ */
 BootcampSchema.pre('remove', async function (next) {
   console.log(`Courses being removed from bootcamp ${this._id}`);
   await this.model('Course').deleteMany({ bootcamp: this._id });

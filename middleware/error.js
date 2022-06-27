@@ -14,7 +14,7 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
   // Log to console for dev
   // Prints out fields that we can USE to perform even better error validation!
-  console.log(err.name);
+  console.log(err);
 
   // Mongoose bad ObjectId - Handle error if bootcamp not found by id
   if (err.name === 'CastError') {
