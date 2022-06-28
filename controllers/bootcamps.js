@@ -8,6 +8,7 @@
  */
 const path = require('path');
 const Bootcamp = require('../models/Bootcamp');
+const { protect } = require('../middleware/auth');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const geocoder = require('../utils/geocoder');
