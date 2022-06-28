@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const colors = require('colors');
 const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const errorHandler = require('./middleware/error');
 const connectDB = require('./db');
@@ -17,12 +18,14 @@ dotenv.config({ path: './config/config.env' });
 connectDB();
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
+const auth = require('./routes/auth');
 const app = express();
 
 app.use(helmet()); // Secure HTTP Headers
 app.use(cors()); // Cross origin requests
 app.use(express.json()); // Body parser
 app.use(fileUpload()); // File Uploader for route api/v1/bootcamps/:bootcampId/photos
+app.use(cookieParser()); // Currently being used for authentication
 // app.use(
 //   // Allows us to get
 //   express.urlencoded({
@@ -30,8 +33,8 @@ app.use(fileUpload()); // File Uploader for route api/v1/bootcamps/:bootcampId/p
 //   })
 // );
 
-// Dev logging middleware
-// Only check if server is launched in development environment
+// Replaced the logging middleware I created.
+// Only runs when server is launched in development environment
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
@@ -45,7 +48,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Mount routers
 app.use('/api/v1/bootcamps', bootcamps);
 app.use('/api/v1/courses', courses);
-// app.use('/api/v1/auth', auth);
+// Mount the authentication route and controller
+app.use('/api/v1/auth', auth);
+// Yet to implement
 // app.use('/api/v1/users', users);
 // app.use('/api/v1/reviews', reviews);
 
