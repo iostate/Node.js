@@ -1,6 +1,6 @@
 const express = require('express');
 const { getCourse, getCourses, addCourse, updateCourse, deleteCourse } = require('../controllers/courses');
-
+const { protect } = require('../middleware/auth');
 const Course = require('../models/Course');
 const router = express.Router({
   // Makes the params sent to the original endpoint available :-)
@@ -21,6 +21,6 @@ router
     }),
     getCourses
   )
-  .post(addCourse);
-router.route('/:id').get(getCourse).put(updateCourse).delete(deleteCourse);
+  .post(protect, addCourse);
+router.route('/:id').get(getCourse).put(protect, updateCourse).delete(protect, deleteCourse);
 module.exports = router;
