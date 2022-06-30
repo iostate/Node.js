@@ -7,35 +7,31 @@ const User = require('../models/User');
  * Provides the access modifier like behavior in the server.
  */
 exports.protect = asyncHandler(async (req, res, next) => {
-  // console.log(req);
   let token;
-
+  // @todo remove debugging logs on prod
+  console.log('Authorizing request .....');
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    console.log('split');
     token = req.headers.authorization.split(' ')[1];
-    console.log('split token:');
-    console.log(token);
   } else if (req.cookies.token) {
     token = req.cookies.token;
   }
 
   if (!token) {
-    console.log(req.headers);
-    console.log(`no token`);
+    console.log('Authorization is a big fat fail.');
     return next(new ErrorResponse(`Not authorized to access this route`, 401));
   }
 
   try {
-    console.log(`verifying token`);
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // console.log('decoded: ');
     // console.log(decoded);
 
+    console.log('Authorization granted...');
     req.user = await User.findById(decoded.id);
     next();
   } catch (err) {
+    console.log('Authorization is a big fat fail.');
     return next(new ErrorResponse(`Not Authorized to access this route`, 401));
   }
 });
