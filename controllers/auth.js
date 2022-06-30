@@ -15,6 +15,25 @@ exports.getUsers = asyncHandler(async (req, res, next) => {
 
 /**
  *
+ * @desc    Update one user
+ * @route   Put /api/v1/bootcamps/:id
+ * @access  Private
+ */
+exports.updateUser = asyncHandler(async (req, res, next) => {
+  const user = User.findOneAndUpdate(req.user.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!user) {
+    return next(new ErrorResponse(`User with id ${req.user.id} not found`, 404));
+  }
+
+  res.status(200).json({ success: true, msg: `Update bootcamp id ${req.params.id}`, data: bootcamp });
+});
+
+/**
+ *
  * @desc    Get single user
  * @route   GET /api/v1/users/:id
  * @access  Private
@@ -69,7 +88,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
-    return nexr(new ErrorResponse(`Invalid credentials`, 401));
+    return next(new ErrorResponse(`Invalid credentials`, 401));
   }
 
   const isMatch = await user.matchPassword(password);
