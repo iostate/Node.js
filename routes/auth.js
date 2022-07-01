@@ -11,6 +11,5 @@ router.route('/me').post(protect, getMe);
 router
   .route('/users')
   .get(protect, advancedResults(User), getUsers)
-  .put(protect, authorize('publisher', 'admin'), updateUser)
-  .post(protect, authorize('publisher', 'admin'), register);
+  .put(protect, authorize('publisher', 'admin'), updateUser);
 module.exports = router;

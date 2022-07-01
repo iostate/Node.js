@@ -4,6 +4,41 @@ const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 
 /**
+ * Add a course to a bootcamp.
+ * POST REQUEST TO
+ * {{URL}}/api/v1/bootcamps/5d713995b721c3bb38c1f5d0/courses
+ * @desc      Add course
+ * @route     POST /api/v1/bootcamps/:bootcampId/courses
+ * @access    Private
+ */
+exports.addCourse = asyncHandler(async (req, res, next) => {
+  console.log(req.params);
+  //  Add bootcamp this course pertains to
+  req.body.bootcamp = req.params.bootcampId;
+  //  Add user that added this course, too.
+  req.body.user = req.user.id;
+
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
+
+  if (!bootcamp) {
+    return next(new ErrorResponse(`No course with the id of ${req.params.id}`, 404));
+  }
+
+  if ((!bootcamp.user || bootcamp.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.user.id} is not authorized to add a course to bootcamp ${req.params.bootcampId}`,
+        401
+      )
+    );
+  }
+
+  const course = await Course.create(req.body);
+
+  res.status(200).json({ success: true, data: { course } });
+});
+
+/**
  *
  * @desc    Get all courses
  * @route   GET /api/v1/courses
@@ -72,29 +107,6 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * Add a course to a bootcamp.
- * POST REQUEST TO
- * {{URL}}/api/v1/bootcamps/5d713995b721c3bb38c1f5d0/courses
- * @desc      Add course
- * @route     POST /api/v1/bootcamps/:bootcampId/courses
- * @access    Private
- */
-exports.addCourse = asyncHandler(async (req, res, next) => {
-  // getCourse gets called before as you requested
-  req.body.bootcamp = req.params.bootcampId;
-
-  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
-
-  if (!bootcamp) {
-    return next(new ErrorResponse(`No course with the id of ${req.params.id}`, 404));
-  }
-
-  const course = await Course.create(req.body);
-
-  res.status(200).json({ success: true, data: { course } });
-});
-
-/**
  * @todo The access here is declared as private in the comments, but I have yet to
  * set up the logic for that. Soon enough, I will make it so that only the admin can change
  * these resources.
@@ -107,6 +119,10 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 
   if (!course) {
     return next(new ErrorResponse(`No course with the id of ${req.params.id} `, 404));
+  }
+
+  if ((!course.user || course.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User ${req.user.id} is not authorized to update this course`, 401));
   }
 
   course = await Course.findByIdAndUpdate(req.params.id, req.body, {
@@ -128,6 +144,10 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
 
   if (!course) {
     return next(new ErrorResponse(`No course with the id of ${req.params.id} `, 404));
+  }
+
+  if ((!course.user || course.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete this course`, 401));
   }
 
   course = await Course.findByIdAndDelete(req.params.id);

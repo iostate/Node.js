@@ -15,97 +15,6 @@ const geocoder = require('../utils/geocoder');
 
 /**
  *
- * @desc    Get all bootcamps
- * @route   GET /api/v1/bootcamps
- * @access  Public
- */
-exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  // let query;
-
-  // const reqQuery = { ...req.query };
-
-  // const removeFields = ['select', 'sort', 'page', 'limit'];
-
-  // removeFields.forEach((param) => delete reqQuery[param]);
-
-  // // Turn the query into JSON
-  // let queryStr = JSON.stringify(req.query);
-
-  // // Prepending $ to a comparison query operator
-  // queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
-
-  // query = Bootcamp.find(JSON.parse(queryStr)).populate('courses');
-
-  // // Handle select operator
-  // if (req.query.select) {
-  //   const fields = req.query.select.split(',').join(' ');
-  //   console.log(fields); // -> 'name description'
-  //   // query = await Bootcamp.find(JSON.parse(queryStr)).select(fields);
-  //   query = query.select(fields);
-  //   console.log(query);
-  // }
-
-  // // Handle sort operator
-  // if (req.query.sort) {
-  //   const sortBy = req.query.sort.split(',').join(' ');
-  //   // console.log(fields);
-  //   // query = await Bootcamp.find(JSON.parse(queryStr)).sort(fields);
-  //   // Sort in ASC order
-  //   query = query.sort(sortBy);
-  // } else {
-  //   // Sort in DESC order
-  //   query = query.sort('-createdAt');
-  // }
-
-  // const page = parseInt(req.query.page, 10) || 1;
-  // const limit = parseInt(req.query.limit, 10) || 1;
-  // const startIndex = (page - 1) * limit;
-  // const endIndex = page * limit;
-  // const total = await Bootcamp.countDocuments();
-
-  // const bootcamps = await query;
-
-  // const pagination = {};
-  // // Will return only if we're not at the end of endIndex
-  // if (endIndex < total) {
-  //   pagination.next = {
-  //     page: page + 1,
-  //     limit,
-  //   };
-  // }
-
-  // // Will always except at 0 lol
-  // if (startIndex > 0) {
-  //   pagination.prev = {
-  //     page: page - 1,
-  //     limit,
-  //   };
-  // }
-
-  // res.status(200).json({ success: true, count: bootcamps.length, pagination, data: bootcamps });
-  res.status(200).json(res.advancedResults);
-});
-
-/**
- *
- * @desc    Get single bootcamp
- * @route   GET /api/v1/bootcamps/:id
- * @access  Public
- */
-exports.getBootcamp = asyncHandler(async (req, res, next) => {
-  // Don't forget to add populate courses here too!
-  const bootcamp = await Bootcamp.findById(req.params.id).populate('courses');
-  if (!bootcamp) {
-    return next(new ErrorResponse(`Bootcamp with id ${req.params.id} not found`, 404));
-  }
-  res.status(200).json({
-    success: true,
-    data: bootcamp,
-  });
-});
-
-/**
- *
  * @desc    Create new bootcamp
  * @route   POST /api/v1/bootcamps/:id
  * @access  Public
@@ -132,20 +41,55 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
 
 /**
  *
+ * @desc    Get all bootcamps
+ * @route   GET /api/v1/bootcamps
+ * @access  Public
+ */
+exports.getBootcamps = asyncHandler(async (req, res, next) => {
+  res.status(200).json(res.advancedResults);
+});
+
+/**
+ *
+ * @desc    Get single bootcamp
+ * @route   GET /api/v1/bootcamps/:id
+ * @access  Public
+ */
+exports.getBootcamp = asyncHandler(async (req, res, next) => {
+  // Don't forget to add populate courses here too!
+  const bootcamp = await Bootcamp.findById(req.params.id).populate('courses');
+  if (!bootcamp) {
+    return next(new ErrorResponse(`Bootcamp with id ${req.params.id} not found`, 404));
+  }
+  res.status(200).json({
+    success: true,
+    data: bootcamp,
+  });
+});
+
+/**
+ *
  * @desc    Update one bootcamp
  * @route   GET /api/v1/bootcamps/:id
  * @access  Public
  */
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    // Run the mongoose validator when someone PUTs
-    runValidators: true,
-  }).populate('courses');
+  // When updating a resource, don't use the findByIdAndUpdate method right away.
+  // Use it at the end. l
+  let bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp with id ${req.params.id} not found`, 404));
   }
+
+  if ((!bootcamp.user || bootcamp.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User ${req.params.id} is not authorized to update this bootcamp`, 401));
+  }
+
+  bootcamp = await Bootcamp.findOneAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  }).populate('courses');
 
   res.status(200).json({ success: true, msg: `Update bootcamp id ${req.params.id}`, data: bootcamp });
 });
@@ -161,6 +105,10 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
 
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404));
+  }
+
+  if ((!bootcamp.user || bootcamp.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User ${req.params.id} is not authorized to update this bootcamp`, 401));
   }
 
   bootcamp.remove();
@@ -207,6 +155,12 @@ exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
 
   if (!bootcamp) {
     return next(new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404));
+  }
+
+  console.log(bootcamp.user);
+
+  if ((!bootcamp.user || bootcamp.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User ${req.params.id} is not authorized to update this bootcamp`, 401));
   }
 
   if (!req.files) {
