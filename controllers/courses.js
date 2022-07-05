@@ -1,7 +1,7 @@
+const ErrorResponse = require('../utils/errorResponse');
+const asyncHandler = require('../middleware/async');
 const Course = require('../models/Course');
 const Bootcamp = require('../models/Bootcamp');
-const asyncHandler = require('../middleware/async');
-const ErrorResponse = require('../utils/errorResponse');
 
 /**
  * Add a course to a bootcamp.
@@ -89,7 +89,7 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
 /**
  *
  * @desc    Get single bootcamp
- * @route   GET /api/v1/bootcamps/:id
+ * @route   GET /api/v1/courses/:id
  * @access  Public
  */
 exports.getCourse = asyncHandler(async (req, res, next) => {
