@@ -19,6 +19,8 @@ connectDB();
 const bootcamps = require('./routes/bootcamps');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
+const users = require('./routes/users');
+
 const app = express();
 
 app.use(helmet()); // Secure HTTP Headers
@@ -51,7 +53,7 @@ app.use('/api/v1/courses', courses);
 // Mount the authentication route and controller
 app.use('/api/v1/auth', auth);
 // Yet to implement
-// app.use('/api/v1/users', users);
+app.use('/api/v1/users', users);
 // app.use('/api/v1/reviews', reviews);
 
 app.use(errorHandler);
