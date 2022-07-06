@@ -45,6 +45,10 @@ if (process.env.NODE_ENV === 'development') {
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/hello_world', (req, res) => {
+  res.status(200).json({ success: true, data: 'hello world' });
+});
+
 // Replaced our own middleware with Morgan.
 // app.use(logger);
 
