@@ -33,7 +33,7 @@ const ReviewSchema = new mongoose.Schema({
   },
 });
 
-ReviewSchema.static.getAverageRating = async function (bootcampId) {
+ReviewSchema.statics.getAverageRating = async function (bootcampId) {
   const obj = await this.aggregate([
     {
       $match: { bootcamp: bootcampId },
@@ -58,7 +58,7 @@ ReviewSchema.static.getAverageRating = async function (bootcampId) {
 };
 
 ReviewSchema.post('save', function () {
-  this.constructor.getAverageRating(this.bootcamp);
+  this.static.getAverageRating(this.bootcamp);
 });
 
 // Prevent user from submitting more than one review per bootcamp
