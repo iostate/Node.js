@@ -22,6 +22,10 @@ exports.getUsers = asyncHandler(async (req, res, next) => {
 exports.getUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
 
+  if (!user) {
+    return next(new ErrorResponse(`User of id ${req.params.id} does not exist`, 404));
+  }
+
   res.status(200).json({
     success: true,
     data: user,
