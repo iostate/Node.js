@@ -37,7 +37,7 @@ const importData = async () => {
     console.log('Data Imported'.green.inverse);
     process.exit();
   } catch (err) {
-    console.log(err.red.inverse);
+    console.log(err);
   }
 };
 
