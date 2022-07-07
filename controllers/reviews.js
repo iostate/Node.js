@@ -59,6 +59,12 @@ exports.addReview = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
   req.body.user = req.user.id;
 
+  const reviewExists = await Review.find({ bootcamp: req.body.bootcamp, user: req.body.user });
+
+  if (reviewExists) {
+    return next(new ErrorResponse(`Post already submitted `, 404));
+  }
+
   console.log(req.body);
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
