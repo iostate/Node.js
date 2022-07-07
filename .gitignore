@@ -1,7 +1,6 @@
 node_modules/
 config/config.env
 theme/
-_data/
 links.md
 devcamper_theme.md
 .DS_Store
