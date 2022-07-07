@@ -58,7 +58,7 @@ ReviewSchema.statics.getAverageRating = async function (bootcampId) {
 };
 
 ReviewSchema.post('save', function () {
-  this.static.getAverageRating(this.bootcamp);
+  this.constructor.getAverageRating(this.bootcamp);
 });
 
 // Prevent user from submitting more than one review per bootcamp
