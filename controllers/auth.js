@@ -24,10 +24,18 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 });
 
 // @desc      Register user
-// @route     GET /api/v1/auth/register
+// @route     POST /api/v1/auth/register
 // @access    Public
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role } = req.body;
+  console.log(req.body);
+
+  // Check to see if a usre exists already
+  const findUser = await User.findOne({ email: email });
+  console.log(findUser);
+  if (findUser) {
+    return next(new ErrorResponse(`User with email ${email} already registered`, 400));
+  }
 
   // Create user
   const user = await User.create({
