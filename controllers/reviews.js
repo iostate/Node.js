@@ -59,13 +59,12 @@ exports.addReview = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
   req.body.user = req.user.id;
 
-  const reviewExists = await Review.find({ bootcamp: req.body.bootcamp, user: req.body.user });
+  const revExists = await Review.findOne({ bootcamp: req.body.bootcamp, user: req.body.user });
 
-  if (reviewExists) {
-    return next(new ErrorResponse(`Post already submitted `, 404));
+  if (revExists) {
+    return next(new ErrorResponse(`Post already exists from you for bootcamp id of ${req.params.bootcampId}`, 404));
   }
 
-  console.log(req.body);
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
   if (!bootcamp) {
@@ -74,5 +73,68 @@ exports.addReview = asyncHandler(async (req, res, next) => {
 
   const review = await Review.create(req.body);
 
-  res.status(201).json({ success: true, data: review });
+  res.status(201).json({
+    success: true,
+    data: review,
+  });
 });
+
+/**
+ * @todo The access here is declared as private in the comments, but I have yet to
+ * set up the logic for that. Soon enough, I will make it so that only the admin can change
+ * these resources.
+ * @desc    Update one course
+ * @route   PUT /api/v1/course/:id
+ * @access  Private
+ */
+exports.updateReview = asyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  let review = await Review.findById(req.params.id);
+
+  if (!review) {
+    return next(new ErrorResponse(`No review with the id of ${req.params.id}`, 404));
+  }
+  console.log(review.user.toString());
+  // Make sure review belongs to user or user is admin
+  if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`Not authorized to update review`, 401));
+  }
+
+  review = await Review.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: review,
+  });
+});
+
+/**
+ * @desc    Delete one course
+ * @route   DELETE /api/v1/course/:id
+ * @access  Private
+ */
+exports.deleteReview = asyncHandler(async (req, res, next) => {
+  let review = await Review.findById(req.params.id);
+
+  if (!review) {
+    return next(new ErrorResponse(`No review with the id of ${req.params.id} `, 404));
+  }
+
+  if (clientOwnsDocument(req, review)) {
+    return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete this course`, 401));
+  }
+  // if ((!review.user || review.user.toString() !== req.user.id) && req.user.role !== 'admin') {
+  //   return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete this course`, 401));
+  // }
+
+  review = await Review.findByIdAndDelete(req.params.id);
+
+  res.status(200).json({ success: true, msg: `Deleted review id ${req.params.id}`, data: {} });
+});
+
+function clientOwnsDocument(clientReq, review) {
+  return (!review.user || review.user.toString() !== clientReq.user.id) && clientReq.user.role !== 'admin';
+}
