@@ -9,7 +9,6 @@ const User = require('../models/User');
  */
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;
-  req.log.info('something');
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
@@ -30,8 +29,11 @@ exports.protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Ensures that the user's role is permitted to access a route
-// Applied to Express.js routes to act as an access modifier of sorts
+/**
+ *
+ * @param  {...String} roles Enter the roles that will be allowed access to this route.
+ * @returns
+ */
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
