@@ -7,7 +7,6 @@ const colors = require('colors');
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
-const pino = require('pino-http')();
 
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
@@ -129,7 +128,6 @@ const server = app.listen(PORT, pino, console.log(`Server running in ${process.e
 
 process.on('unhandledRejection', (err, promise) => {
   console.log(`Error: ${err.message}`.red);
-  err.log.error('someth');
   // Close server & exit process
   server.close(() => process.exit(1));
 });
