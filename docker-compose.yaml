@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  server:
+    # The keyword "build" will allow you to define
+    # the path to the Dockerfile to use to create the image
+    # that will allow you to execute the service.
+    # Here 'server/' corresponds to the path to the server folder
+    # that contains the Dockerfile to use.
+    build: server/
+    env_file: config/config.env
+     # The command to execute once the image is created.
+    # The following command will execute "python ./server.py".
+    container_name: server
+    ports:
+      - '5000:5000'
+    # volumes: 
+      #
+    #   - ./api:/server.js
+    #   - ./app/node_modules
+  # portfolio:
+  #   build: ./portfolio
+  #   container_name: portfolio_c
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - ./portfolio:/app
+  #     - ./app/node_modules
+  #   stdin_open: true
+  #   tty: true
