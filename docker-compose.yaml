@@ -14,6 +14,7 @@ services:
     ports:
       - '5000:5000'
     # volumes: 
+      #
     #   - ./api:/server.js
     #   - ./app/node_modules
   # portfolio:
