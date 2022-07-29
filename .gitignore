@@ -1,0 +1,9 @@
+node_modules/
+config/config.env
+theme/
+links.md
+devcamper_theme.md
+.DS_Store
+venv/
+public/uploads/
+z/
